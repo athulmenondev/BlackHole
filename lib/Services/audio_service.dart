@@ -152,20 +152,22 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
 
     Logger.root.info('checking connectivity & setting quality');
 
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      if (result == ConnectivityResult.mobile) {
+    Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      if (results.contains(ConnectivityResult.mobile)) {
         connectionType = 'mobile';
         Logger.root.info(
           'player | switched to mobile data, changing quality to $preferredMobileQuality',
         );
         preferredQuality = preferredMobileQuality;
-      } else if (result == ConnectivityResult.wifi) {
+      } else if (results.contains(ConnectivityResult.wifi)) {
         connectionType = 'wifi';
         Logger.root.info(
           'player | wifi connected, changing quality to $preferredWifiQuality',
         );
         preferredQuality = preferredWifiQuality;
-      } else if (result == ConnectivityResult.none) {
+      } else if (results.contains(ConnectivityResult.none)) {
         Logger.root.severe(
           'player | internet connection not available',
         );
