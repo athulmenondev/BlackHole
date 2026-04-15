@@ -44,6 +44,8 @@ import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sizer/sizer.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:tray_manager/tray_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +57,16 @@ Future<void> main() async {
     await Hive.initFlutter('Database');
   } else {
     await Hive.initFlutter();
+  }
+
+  if (Platform.isLinux) {
+    JustAudioMediaKit.ensureInitialized(linux: true);
+    await trayManager.setIcon('assets/ic_launcher.png');
+    List<MenuItem> items = [
+      MenuItem(key: 'show', label: 'Show BlackHole'),
+      MenuItem(key: 'exit', label: 'Quit'),
+    ];
+    await trayManager.setContextMenu(Menu(items: items));
   }
   for (final box in hiveBoxes) {
     await openHiveBox(

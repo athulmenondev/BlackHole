@@ -17,7 +17,6 @@ import androidx.core.app.ActivityCompat
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.Intent
-import io.flutter.plugin.common.MethodChannel
 
 /**
  * Implementation of App Widget functionality.

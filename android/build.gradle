@@ -1,3 +1,24 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.1.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22"
+    }
+    configurations.classpath {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name == 'kotlin-gradle-plugin') {
+                details.useVersion '1.8.22'
+            }
+            if (details.requested.group == 'com.android.tools.build' && details.requested.name == 'gradle') {
+                details.useVersion '8.1.1'
+            }
+        }
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -11,6 +32,53 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
+    
+    project.plugins.withId("com.android.library") {
+        if (project.android.namespace == null) {
+            def manifestFile = project.file("src/main/AndroidManifest.xml")
+            if (manifestFile.exists()) {
+                def content = manifestFile.text
+                def pkgMatcher = content =~ /package="([^"]+)"/
+                if (pkgMatcher.find()) {
+                    project.android.namespace = pkgMatcher.group(1)
+                }
+            }
+        }
+        project.android.compileSdk 34
+        project.android.compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+
+    project.plugins.withId("org.jetbrains.kotlin.android") {
+        project.android.kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+}
+
+// Global task configuration for Java targets
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << "-Xlint:-options"
+        options.compilerArgs << "-Xlint:-deprecation"
+        // Try to disable -Werror globally
+        options.compilerArgs.removeAll { it == "-Werror" }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.core:core:1.13.1'
+            force 'androidx.core:core-ktx:1.13.1'
+            force 'androidx.browser:browser:1.8.0'
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
